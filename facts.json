@@ -1,0 +1,19 @@
+{
+    "circuitFacts": [
+        {
+            "room": "office",
+            "floor": "1",
+            "location": "ceiling",
+            "type": "ceilingLight",
+            "breaker": 5
+        }
+    ],
+    "paintColors": [
+        {
+            "room": "office",
+            "floor": "1",
+            "location": "ceiling",
+            "color": 16777215
+        }
+    ]
+}
