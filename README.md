@@ -14,5 +14,3 @@ In the future, more methods for organizing, changing, adding, and removing facts
 
 * Facts file path should come from an environment variable
 * Set a file watch on the facts file (to set it up to work with a ConfigMap)
-* Build a docker image
-* Add testing
