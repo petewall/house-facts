@@ -1,0 +1,108 @@
+resource_types:
+- name: pull-request
+  type: registry-image
+  source:
+    repository: teliaoss/github-pr-resource
+    username: ((dockerhub.username))
+    password: ((dockerhub.password))
+
+resources:
+- name: source
+  type: git
+  icon: github
+  source:
+    uri: git@github.com:petewall/house-facts
+    branch: main
+    private_key: ((github.private_key))
+
+- name: pull-requests
+  type: pull-request
+  icon: github
+  check_every: 1h
+  source:
+    repository: petewall/house-facts
+    access_token: ((github.access_token))
+
+# - name: version
+#   type: semver
+#   icon: github
+#   source:
+#     driver: git
+#     commit_message: "[ci skip] bump version to %version%"
+#     uri: git@github.com:petewall/house-facts.git
+#     branch: main
+#     file: version
+#     private_key: ((github.private_key))
+
+- name: golang
+  type: registry-image
+  icon: language-go
+  source:
+    repository: golang
+    tag: 1.19
+    username: ((dockerhub.username))
+    password: ((dockerhub.password))
+
+jobs:
+- name: test
+  plan:
+  - in_parallel:
+    - get: source
+      trigger: true
+    - get: golang
+  - task: test
+    image: golang
+    config:
+      platform: linux
+      inputs:
+        - name: source
+      run:
+        dir: source
+        path: make
+        args: [test]
+
+- name: test-pull-request
+  serial: true
+  plan:
+  - in_parallel:
+    - get: source
+      resource: pull-requests
+      trigger: true
+      version: every
+      params:
+        integration_tool: rebase
+      on_success:
+        put: pull-requests
+        inputs: detect
+        params:
+          path: source
+          status: pending
+      on_failure:
+        put: pull-requests
+        inputs: detect
+        params:
+          path: source
+          context: merge-conflict
+          status: failure
+    - get: golang
+  - task: test
+    image: golang
+    config:
+      platform: linux
+      inputs:
+        - name: source
+      run:
+        dir: source
+        path: make
+        args: [test]
+    on_failure:
+      put: pull-requests
+      inputs: detect
+      params:
+        path: source
+        status: failure
+  - put: pull-requests
+    inputs: detect
+    params:
+      path: source
+      status: success
