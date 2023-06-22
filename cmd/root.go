@@ -52,8 +52,8 @@ var rootCmd = &cobra.Command{
 func init() {
 	rootCmd.PersistentFlags().StringP("facts-file", "f", "./facts.json", "Path to facts file")
 	rootCmd.PersistentFlags().IntP("port", "p", 3000, "Port number to listen on")
-	viper.BindPFlag("facts-file", rootCmd.PersistentFlags().Lookup("facts-file"))
-	viper.BindPFlag("port", rootCmd.PersistentFlags().Lookup("port"))
+	_ = viper.BindPFlag("facts-file", rootCmd.PersistentFlags().Lookup("facts-file"))
+	_ = viper.BindPFlag("port", rootCmd.PersistentFlags().Lookup("port"))
 }
 
 func Execute() {
