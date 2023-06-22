@@ -21,6 +21,9 @@ endif
 	golangci-lint run
 
 test-units: $(SRC) deps
+ifndef HAS_GINKGO
+	go install github.com/onsi/ginkgo/v2/ginkgo
+endif
 	ginkgo -r .
 
 test: lint test-units
