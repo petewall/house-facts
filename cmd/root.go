@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/petewall/house-facts/internal"
 )
@@ -19,7 +20,7 @@ var rootCmd = &cobra.Command{
 	Short: "house-facts",
 	Long:  `house-facts has facts about a house`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		facts, err := internal.LoadFacts("./facts.json")
+		facts, err := internal.LoadFacts(viper.GetString("facts-file"))
 		if err != nil {
 			return err
 		}
@@ -44,8 +45,15 @@ var rootCmd = &cobra.Command{
 		})
 		r.Get("/metrics", promhttp.Handler().ServeHTTP)
 
-		return http.ListenAndServe(":3000", r)
+		return http.ListenAndServe(fmt.Sprintf(":%d", viper.GetInt("port")), r)
 	},
+}
+
+func init() {
+	rootCmd.PersistentFlags().StringP("facts-file", "f", "./facts.json", "Path to facts file")
+	rootCmd.PersistentFlags().IntP("port", "p", 3000, "Port number to listen on")
+	viper.BindPFlag("facts-file", rootCmd.PersistentFlags().Lookup("facts-file"))
+	viper.BindPFlag("port", rootCmd.PersistentFlags().Lookup("port"))
 }
 
 func Execute() {
